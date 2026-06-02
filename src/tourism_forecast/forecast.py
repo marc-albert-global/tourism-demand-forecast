@@ -1,6 +1,6 @@
 """Forecasting: backtest a seasonal model and project demand forward.
 
-Modeling choice — the series has a severe COVID structural break (2020–2021)
+Modeling choice, the series has a severe COVID structural break (2020-2021)
 that does not represent normal demand dynamics. Training a single model across
 it would let the collapse and snap-back contaminate the seasonal and trend
 estimates. So we fit on the **post-recovery regime** (configurable start),

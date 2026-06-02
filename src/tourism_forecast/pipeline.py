@@ -27,7 +27,7 @@ _MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
 
 def _billions(ax) -> None:
     # FRED reports AIRRPMTSI in thousands of passenger-miles, so the raw values
-    # (~5e7–1e8) are billions of actual miles: value(thousands) / 1e6 = billions.
+    # (~5e7-1e8) are billions of actual miles: value(thousands) / 1e6 = billions.
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v/1e6:.0f}B"))
 
 
@@ -129,7 +129,7 @@ def _plot_backtest(bt) -> None:
     ax.plot(bt.train.index[-18:], bt.train.values[-18:], color="#9ca3af", lw=1.2, label="train")
     ax.plot(bt.test.index, bt.test.values, color="#111827", lw=2, label="actual (held out)")
     ax.plot(bt.predicted.index, bt.predicted.values, color="#dc2626", lw=2, ls="--", label="forecast")
-    ax.set_title(f"Backtest on held-out 12 months — MAPE {bt.mape:.1f}%")
+    ax.set_title(f"Backtest on held-out 12 months, MAPE {bt.mape:.1f}%")
     ax.set_ylabel("Passenger-miles"); _billions(ax); ax.grid(alpha=0.25); ax.legend()
     fig.tight_layout(); fig.savefig(FIG_DIR / "04_backtest.png", dpi=130); plt.close(fig)
 

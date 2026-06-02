@@ -1,4 +1,4 @@
-"""Tests run on the committed data snapshot — no network required."""
+"""Tests run on the committed data snapshot, no network required."""
 
 import pandas as pd
 

@@ -1,4 +1,4 @@
-"""tourism-demand-forecast — seasonal demand forecasting on public travel data."""
+"""tourism-demand-forecast, seasonal demand forecasting on public travel data."""
 
 from . import analyze, clean, forecast, ingest, pipeline
 

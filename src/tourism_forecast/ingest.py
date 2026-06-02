@@ -1,7 +1,7 @@
 """Data ingestion.
 
 Source: U.S. Air Revenue Passenger-Miles (series ``AIRRPMTSI``) from FRED,
-Federal Reserve Bank of St. Louis. Monthly, not seasonally adjusted — we want
+Federal Reserve Bank of St. Louis. Monthly, not seasonally adjusted, we want
 the seasonality intact for forecasting. A snapshot lives in ``data/raw/`` so
 the pipeline is fully reproducible offline; ``download()`` re-fetches the
 latest from FRED on demand.

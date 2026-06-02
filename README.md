@@ -1,6 +1,6 @@
 # tourism-demand-forecast
 
-[![CI](https://github.com/MarcAlbert06800/tourism-demand-forecast/actions/workflows/ci.yml/badge.svg)](https://github.com/MarcAlbert06800/tourism-demand-forecast/actions/workflows/ci.yml)
+[![CI](https://github.com/marc-albert-global/tourism-demand-forecast/actions/workflows/ci.yml/badge.svg)](https://github.com/marc-albert-global/tourism-demand-forecast/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
@@ -20,16 +20,16 @@ held-out 12-month window.
 
 ## Results
 
-**Series:** U.S. Air Revenue Passenger-Miles, monthly, Jan 2000 – Feb 2026 (FRED `AIRRPMTSI`, 314 obs).
+**Series:** U.S. Air Revenue Passenger-Miles, monthly, Jan 2000 to Feb 2026 (FRED `AIRRPMTSI`, 314 obs).
 
 | | |
 |---|---|
-| Seasonality | Peaks **July**, troughs **February**, ~**1.43×** peak-to-trough |
-| COVID shock | **−96.4%** YoY at the April 2020 trough; recovered to 2019 average by **July 2022** |
+| Seasonality | Peaks **July**, troughs **February**, ~**1.43x** peak-to-trough |
+| COVID shock | **-96.4%** YoY at the April 2020 trough; recovered to 2019 average by **July 2022** |
 | Backtest (held-out 12 mo) | **MAPE 1.15%** |
 | Model | Holt-Winters (additive trend, multiplicative seasonality), fit on the post-recovery regime |
 
-### Full history — and the shock the model is built to survive
+### Full history, and the shock the model is built to survive
 ![History](reports/figures/01_history.png)
 
 ### Seasonal decomposition (STL)
@@ -51,11 +51,11 @@ ingest  →  clean  →  analyze  →  forecast  →  figures
  snapshot  series    + COVID break  + backtest
 ```
 
-1. **Ingest** (`ingest.py`) — pull the FRED series; a committed snapshot makes the pipeline reproduce offline.
-2. **Clean** (`clean.py`) — parse to a contiguous month-start series, coerce types, interpolate any internal gaps.
-3. **Analyze** (`analyze.py`) — STL decomposition, a seasonal index computed on the post-recovery window, and a quantified COVID-impact summary.
-4. **Forecast** (`forecast.py`) — fit on the post-recovery regime, backtest on a held-out tail (MAPE/RMSE/MAE), then project 12 months with empirical prediction intervals derived from the backtest residuals.
-5. **Pipeline** (`pipeline.py`) — orchestrates all of the above, writes every figure to `reports/figures/` and the headline numbers to `reports/metrics.json`.
+1. **Ingest** (`ingest.py`): pull the FRED series; a committed snapshot makes the pipeline reproduce offline.
+2. **Clean** (`clean.py`): parse to a contiguous month-start series, coerce types, interpolate any internal gaps.
+3. **Analyze** (`analyze.py`): STL decomposition, a seasonal index computed on the post-recovery window, and a quantified COVID-impact summary.
+4. **Forecast** (`forecast.py`): fit on the post-recovery regime, backtest on a held-out tail (MAPE/RMSE/MAE), then project 12 months with empirical prediction intervals derived from the backtest residuals.
+5. **Pipeline** (`pipeline.py`): orchestrates all of the above, writes every figure to `reports/figures/` and the headline numbers to `reports/metrics.json`.
 
 Why fit only on the recovered regime, and what the forecast does and does not
 claim, is argued in [`reports/NARRATIVE.md`](reports/NARRATIVE.md).
@@ -63,7 +63,7 @@ claim, is argued in [`reports/NARRATIVE.md`](reports/NARRATIVE.md).
 ## Run it
 
 ```bash
-git clone https://github.com/MarcAlbert06800/tourism-demand-forecast.git
+git clone https://github.com/marc-albert-global/tourism-demand-forecast.git
 cd tourism-demand-forecast
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
