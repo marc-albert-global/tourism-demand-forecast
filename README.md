@@ -1,5 +1,9 @@
 # tourism-demand-forecast
 
+[![CI](https://github.com/MarcAlbert06800/tourism-demand-forecast/actions/workflows/ci.yml/badge.svg)](https://github.com/MarcAlbert06800/tourism-demand-forecast/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.9%2B-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+
 End-to-end seasonal forecasting of U.S. air-travel demand on public monthly
 data, with explicit, defensible handling of the COVID structural break.
 
