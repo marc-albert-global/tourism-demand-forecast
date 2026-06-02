@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tourism-demand-forecast"
+version = "0.1.0"
+description = "End-to-end seasonal demand forecasting on public U.S. air-travel data, with explicit handling of the COVID structural break."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Marc Albert" }]
+requires-python = ">=3.9"
+dependencies = [
+  "pandas>=1.5",
+  "numpy>=1.23",
+  "matplotlib>=3.6",
+  "statsmodels>=0.13",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+tourism-forecast = "tourism_forecast.pipeline:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,25 @@
+{
+  "series": "U.S. Air Revenue Passenger-Miles (FRED AIRRPMTSI)",
+  "observations": 314,
+  "range": [
+    "2000-01-01",
+    "2026-02-01"
+  ],
+  "covid": {
+    "trough_date": "2020-04-01",
+    "trough_drop_pct_yoy": -96.4,
+    "recovery_date": "2022-07-01"
+  },
+  "seasonality": {
+    "peak_month": "Jul",
+    "trough_month": "Feb",
+    "peak_to_trough_ratio": 1.426
+  },
+  "backtest": {
+    "horizon_months": 12,
+    "mape_pct": 1.15,
+    "rmse": 1306158.8,
+    "mae": 1069809.8
+  },
+  "forecast_next_12m_mean": 97003484.2
+}
