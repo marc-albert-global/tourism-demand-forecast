@@ -16,7 +16,8 @@ matplotlib.use("Agg")  # headless rendering
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
-from . import analyze, clean, ingest, forecast as fc
+from . import analyze, clean, ingest
+from . import forecast as fc
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIG_DIR = REPO_ROOT / "reports" / "figures"
@@ -64,7 +65,9 @@ def run(*, refresh: bool = False) -> Results:
         "covid": {
             "trough_date": str(covid["trough_date"].date()),
             "trough_drop_pct_yoy": round(covid["trough_drop_pct_yoy"], 1),
-            "recovery_date": str(covid["recovery_date"].date()) if covid["recovery_date"] is not None else None,
+            "recovery_date": (
+                str(covid["recovery_date"].date()) if covid["recovery_date"] is not None else None
+            ),
         },
         "seasonality": {
             "peak_month": _MONTHS[seasonal.peak_month - 1],
@@ -98,9 +101,12 @@ def _plot_history(series, covid) -> None:
         arrowprops=dict(arrowstyle="->", color="#dc2626"),
     )
     ax.set_title("U.S. Air Revenue Passenger-Miles, monthly (FRED AIRRPMTSI)")
-    ax.set_ylabel("Passenger-miles"); _billions(ax)
+    ax.set_ylabel("Passenger-miles")
+    _billions(ax)
     ax.grid(alpha=0.25)
-    fig.tight_layout(); fig.savefig(FIG_DIR / "01_history.png", dpi=130); plt.close(fig)
+    fig.tight_layout()
+    fig.savefig(FIG_DIR / "01_history.png", dpi=130)
+    plt.close(fig)
 
 
 def _plot_decomposition(decomp) -> None:
@@ -110,9 +116,12 @@ def _plot_decomposition(decomp) -> None:
         ["#111827", "#2563eb", "#059669", "#9ca3af"],
     ):
         ax.plot(decomp.index, decomp[col], color=color, lw=1.1)
-        ax.set_ylabel(col); ax.grid(alpha=0.2)
+        ax.set_ylabel(col)
+        ax.grid(alpha=0.2)
     axes[0].set_title("STL decomposition (trend / seasonal / residual)")
-    fig.tight_layout(); fig.savefig(FIG_DIR / "02_decomposition.png", dpi=130); plt.close(fig)
+    fig.tight_layout()
+    fig.savefig(FIG_DIR / "02_decomposition.png", dpi=130)
+    plt.close(fig)
 
 
 def _plot_seasonality(seasonal) -> None:
@@ -122,8 +131,11 @@ def _plot_seasonality(seasonal) -> None:
            color=["#2563eb" if v >= 1 else "#93c5fd" for v in idx.values])
     ax.axhline(0, color="#374151", lw=0.8)
     ax.set_title("Seasonal index by month (deviation from annual mean, 2022+)")
-    ax.set_ylabel("% vs. annual mean"); ax.grid(alpha=0.25, axis="y")
-    fig.tight_layout(); fig.savefig(FIG_DIR / "03_seasonality.png", dpi=130); plt.close(fig)
+    ax.set_ylabel("% vs. annual mean")
+    ax.grid(alpha=0.25, axis="y")
+    fig.tight_layout()
+    fig.savefig(FIG_DIR / "03_seasonality.png", dpi=130)
+    plt.close(fig)
 
 
 def _plot_backtest(forecast, series) -> None:
@@ -139,8 +151,13 @@ def _plot_backtest(forecast, series) -> None:
     ax.plot(bt.predicted.index, bt.predicted.values, color="#dc2626", lw=2, ls="--",
             label=f"Holt-Winters forecast ({bt.mape:.2f}% MAPE)")
     ax.set_title("Backtest on held-out 12 months: model vs. seasonal-naive baseline")
-    ax.set_ylabel("Passenger-miles"); _billions(ax); ax.grid(alpha=0.25); ax.legend()
-    fig.tight_layout(); fig.savefig(FIG_DIR / "04_backtest.png", dpi=130); plt.close(fig)
+    ax.set_ylabel("Passenger-miles")
+    _billions(ax)
+    ax.grid(alpha=0.25)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(FIG_DIR / "04_backtest.png", dpi=130)
+    plt.close(fig)
 
 
 def _plot_forecast(forecast) -> None:
@@ -151,8 +168,13 @@ def _plot_forecast(forecast) -> None:
     ax.fill_between(forecast.mean.index, forecast.lower.values, forecast.upper.values,
                     color="#dc2626", alpha=0.15, label="95% interval")
     ax.set_title("12-month demand forecast (Holt-Winters, post-recovery regime)")
-    ax.set_ylabel("Passenger-miles"); _billions(ax); ax.grid(alpha=0.25); ax.legend()
-    fig.tight_layout(); fig.savefig(FIG_DIR / "05_forecast.png", dpi=130); plt.close(fig)
+    ax.set_ylabel("Passenger-miles")
+    _billions(ax)
+    ax.grid(alpha=0.25)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(FIG_DIR / "05_forecast.png", dpi=130)
+    plt.close(fig)
 
 
 if __name__ == "__main__":

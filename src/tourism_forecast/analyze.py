@@ -33,7 +33,7 @@ def seasonal_profile(series: pd.Series) -> SeasonalProfile:
     )
 
 
-def decompose(series: pd.Series, period: int = 12) -> "pd.DataFrame":
+def decompose(series: pd.Series, period: int = 12) -> pd.DataFrame:
     """STL decomposition into trend / seasonal / residual components."""
     result = STL(series, period=period, robust=True).fit()
     return pd.DataFrame(
@@ -52,12 +52,13 @@ def covid_impact(series: pd.Series) -> dict:
     Returns the trough month, the drop vs. the prior year, and the first month
     that recovered to its 2019 level.
     """
-    trough_date = series["2020-01-01":"2021-12-31"].idxmin()
+    pandemic = series[(series.index >= "2020-01-01") & (series.index <= "2021-12-31")]
+    trough_date = pandemic.idxmin()
     trough_value = series.loc[trough_date]
     prior_year = series.loc[trough_date - pd.DateOffset(years=1)]
     drop_pct = (trough_value / prior_year - 1) * 100
 
-    baseline_2019 = series["2019-01-01":"2019-12-31"].mean()
+    baseline_2019 = series[(series.index >= "2019-01-01") & (series.index <= "2019-12-31")].mean()
     post = series[series.index >= "2021-01-01"]
     recovered = post[post >= baseline_2019]
     recovery_date = recovered.index[0] if len(recovered) else None

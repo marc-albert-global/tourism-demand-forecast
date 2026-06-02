@@ -15,5 +15,9 @@ jobs:
           python-version: "3.11"
       - name: Install
         run: pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: ruff check src tests
+      - name: Type-check (mypy)
+        run: mypy
       - name: Run tests
         run: pytest -q

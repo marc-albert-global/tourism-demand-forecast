@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/marc-albert-global/tourism-demand-forecast/actions/workflows/ci.yml/badge.svg)](https://github.com/marc-albert-global/tourism-demand-forecast/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
+![lint: ruff](https://img.shields.io/badge/lint-ruff-261230)
+![types: mypy](https://img.shields.io/badge/types-mypy-2a6db2)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 **Forecast monthly travel demand from a single public series, and know whether
@@ -90,7 +92,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
 python -m tourism_forecast.pipeline   # regenerates figures + metrics.json
-pytest -q                             # 6 tests, on the committed snapshot
+ruff check src tests && mypy && pytest -q  # lint + type-check + 6 tests, offline
 ```
 
 ## Limitations
