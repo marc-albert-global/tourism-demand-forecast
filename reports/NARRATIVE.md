@@ -44,13 +44,20 @@ and a multiplicative seasonal term. Multiplicative seasonality is the right
 shape because the size of the summer peak scales with the overall level of
 demand, not by a fixed number of miles.
 
-## Does it work
+## Does it work, and is it worth it
 
 I held out the most recent 12 months, fit on everything before, and forecast
 the holdout. The forecast tracked actual demand to a **1.15% mean absolute
-percentage error**. On a series this seasonal and this far from its shock, that
-is a strong result, and it is honest: the test months were never seen by the
-model.
+percentage error** on months the model never saw.
+
+But a MAPE in isolation means nothing without a baseline, so I scored a
+seasonal-naive forecast (each month predicted by the same month a year earlier)
+on the identical window. It came in at **0.93% MAPE**, slightly better than the
+model. On a series this smooth and this strongly seasonal, last year's value is
+a very hard benchmark to beat, and the honest conclusion is that the Holt-Winters
+model does not earn its added complexity here. The disciplined comparison is
+worth more than the model: it tells a team to ship the simple baseline and spend
+the saved effort on monitoring for the next regime change.
 
 Prediction intervals on the forward forecast are built from the spread of the
 backtest errors rather than the model's nominal confidence bands, so the

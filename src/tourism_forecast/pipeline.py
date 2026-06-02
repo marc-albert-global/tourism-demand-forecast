@@ -54,7 +54,7 @@ def run(*, refresh: bool = False) -> Results:
     _plot_history(series, covid)
     _plot_decomposition(decomp)
     _plot_seasonality(seasonal)
-    _plot_backtest(forecast.backtest)
+    _plot_backtest(forecast, series)
     _plot_forecast(forecast)
 
     metrics = {
@@ -76,6 +76,8 @@ def run(*, refresh: bool = False) -> Results:
             "mape_pct": round(forecast.backtest.mape, 2),
             "rmse": round(forecast.backtest.rmse, 1),
             "mae": round(forecast.backtest.mae, 1),
+            "seasonal_naive_mape_pct": forecast.naive_mape,
+            "improvement_vs_naive_pct": forecast.improvement_pct,
         },
         "forecast_next_12m_mean": round(float(forecast.mean.mean()), 1),
     }
@@ -124,12 +126,19 @@ def _plot_seasonality(seasonal) -> None:
     fig.tight_layout(); fig.savefig(FIG_DIR / "03_seasonality.png", dpi=130); plt.close(fig)
 
 
-def _plot_backtest(bt) -> None:
+def _plot_backtest(forecast, series) -> None:
+    import pandas as pd
+
+    bt = forecast.backtest
+    naive = pd.Series([series.loc[ts - pd.DateOffset(years=1)] for ts in bt.test.index], index=bt.test.index)
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(bt.train.index[-18:], bt.train.values[-18:], color="#9ca3af", lw=1.2, label="train")
     ax.plot(bt.test.index, bt.test.values, color="#111827", lw=2, label="actual (held out)")
-    ax.plot(bt.predicted.index, bt.predicted.values, color="#dc2626", lw=2, ls="--", label="forecast")
-    ax.set_title(f"Backtest on held-out 12 months, MAPE {bt.mape:.1f}%")
+    ax.plot(naive.index, naive.values, color="#f59e0b", lw=1.6, ls=":",
+            label=f"seasonal-naive baseline ({forecast.naive_mape:.1f}% MAPE)")
+    ax.plot(bt.predicted.index, bt.predicted.values, color="#dc2626", lw=2, ls="--",
+            label=f"Holt-Winters forecast ({bt.mape:.2f}% MAPE)")
+    ax.set_title("Backtest on held-out 12 months: model vs. seasonal-naive baseline")
     ax.set_ylabel("Passenger-miles"); _billions(ax); ax.grid(alpha=0.25); ax.legend()
     fig.tight_layout(); fig.savefig(FIG_DIR / "04_backtest.png", dpi=130); plt.close(fig)
 

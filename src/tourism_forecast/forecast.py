@@ -40,6 +40,8 @@ class Forecast:
     lower: pd.Series
     upper: pd.Series
     backtest: Backtest
+    naive_mape: float = 0.0          # seasonal-naive baseline MAPE on the same window
+    improvement_pct: float = 0.0     # relative MAPE reduction vs. the baseline
 
 
 def _fit(series: pd.Series) -> ExponentialSmoothing:
@@ -71,6 +73,24 @@ def backtest(series: pd.Series, *, regime_start: str = REGIME_START, horizon: in
     return Backtest(train=train, test=test, predicted=predicted, mape=mape, rmse=rmse, mae=mae)
 
 
+def seasonal_naive_mape(series: pd.Series, *, regime_start: str = REGIME_START, horizon: int = 12) -> float:
+    """MAPE of the seasonal-naive baseline on the same held-out window.
+
+    The baseline predicts each month with the observed value 12 months earlier.
+    It is the honest "do nothing clever" comparison: the model is only
+    worth its complexity if it beats this. Uses the full series for the
+    12-months-prior lookups so the lagged values exist.
+    """
+    regime = series[series.index >= regime_start]
+    test = regime.iloc[-horizon:]
+    predicted = pd.Series(
+        [series.loc[ts - pd.DateOffset(years=1)] for ts in test.index],
+        index=test.index,
+    )
+    mape, _, _ = _metrics(test, predicted)
+    return mape
+
+
 def forecast(series: pd.Series, *, regime_start: str = REGIME_START, horizon: int = 12) -> Forecast:
     """Backtest, then refit on the full regime and project `horizon` months out.
 
@@ -89,4 +109,8 @@ def forecast(series: pd.Series, *, regime_start: str = REGIME_START, horizon: in
     lower = mean - 1.96 * resid_std
     upper = mean + 1.96 * resid_std
 
-    return Forecast(history=regime, mean=mean, lower=lower, upper=upper, backtest=bt)
+    naive_mape = seasonal_naive_mape(series, regime_start=regime_start, horizon=horizon)
+    improvement = (1 - bt.mape / naive_mape) * 100 if naive_mape else 0.0
+
+    return Forecast(history=regime, mean=mean, lower=lower, upper=upper, backtest=bt,
+                    naive_mape=round(naive_mape, 2), improvement_pct=round(improvement, 1))

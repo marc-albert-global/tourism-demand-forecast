@@ -4,63 +4,84 @@
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-End-to-end seasonal forecasting of U.S. air-travel demand on public monthly
-data, with explicit, defensible handling of the COVID structural break.
+**Forecast monthly travel demand from a single public series, and know whether
+the model is actually worth its complexity.** End to end: ingest, clean,
+profile seasonality, quantify the COVID shock, then backtest a forecast
+*against a do-nothing-clever baseline* so the recommendation is grounded, not
+assumed.
 
-It ingests a public FRED series, cleans it into a monthly time series, profiles
-its seasonality and quantifies the pandemic shock, then backtests and runs a
-12-month Holt-Winters forecast. The headline result is a **1.15% MAPE** on a
-held-out 12-month window.
+The honest result up front: on this recovered, highly seasonal series, a
+seasonal-naive baseline (0.93% MAPE) slightly **beats** the Holt-Winters model
+(1.15% MAPE). That is the point of the project. The disciplined comparison tells
+you where a sophisticated model does not earn its keep, and the genuinely hard,
+valuable work is detecting and handling the structural break, not squeezing the
+last decimal of MAPE.
 
-> The interesting part of this project is not the model. It is the judgment
-> call about *what data to fit it on* when the history contains a 96% demand
-> collapse. Full reasoning in [`reports/NARRATIVE.md`](reports/NARRATIVE.md).
+> Scope: a reproducible study on public FRED data, not a production system.
 
 ---
 
-## Results
-
-**Series:** U.S. Air Revenue Passenger-Miles, monthly, Jan 2000 to Feb 2026 (FRED `AIRRPMTSI`, 314 obs).
+## Impact at a glance
 
 | | |
 |---|---|
-| Seasonality | Peaks **July**, troughs **February**, ~**1.43x** peak-to-trough |
-| COVID shock | **-96.4%** YoY at the April 2020 trough; recovered to 2019 average by **July 2022** |
-| Backtest (held-out 12 mo) | **MAPE 1.15%** |
-| Model | Holt-Winters (additive trend, multiplicative seasonality), fit on the post-recovery regime |
+| Forecast error (held-out 12 mo) | Holt-Winters **1.15% MAPE**, seasonal-naive **0.93% MAPE** |
+| Headline judgment | the simple baseline wins here; complexity is not justified on this series |
+| Structural break handled | COVID trough **-96.4% YoY** (Apr 2020), recovery Jul 2022, modeled explicitly |
+| Seasonality | peaks **July**, troughs **February**, ~1.43x peak-to-trough |
+| Reproducibility | committed data + figures; `pytest` enforces the model-vs-baseline check |
 
-### Full history, and the shock the model is built to survive
-![History](reports/figures/01_history.png)
-
-### Seasonal decomposition (STL)
-![Decomposition](reports/figures/02_decomposition.png)
-
-### Backtest on held-out 12 months
-![Backtest](reports/figures/04_backtest.png)
-
-### 12-month forward forecast
-![Forecast](reports/figures/05_forecast.png)
+Every number is produced by committed code on committed data (`python -m tourism_forecast.pipeline`).
 
 ---
 
-## Approach
+## Problem and context
 
-```
-ingest  →  clean  →  analyze  →  forecast  →  figures
- FRED      monthly   seasonality   Holt-Winters   reports/
- snapshot  series    + COVID break  + backtest
-```
+A planning team needs a 12-month demand forecast and, more importantly, needs
+to trust it. The baseline state is usually "someone extrapolates last year by
+hand." The catch in this series is a once-in-a-generation shock: demand fell 96%
+in 2020 and did not recover until mid-2022. Any forecast that learns *through*
+that shock is wrong. So the real questions are: how do you handle the break, and
+is a fitted model even better than the obvious baseline?
 
-1. **Ingest** (`ingest.py`): pull the FRED series; a committed snapshot makes the pipeline reproduce offline.
-2. **Clean** (`clean.py`): parse to a contiguous month-start series, coerce types, interpolate any internal gaps.
-3. **Analyze** (`analyze.py`): STL decomposition, a seasonal index computed on the post-recovery window, and a quantified COVID-impact summary.
-4. **Forecast** (`forecast.py`): fit on the post-recovery regime, backtest on a held-out tail (MAPE/RMSE/MAE), then project 12 months with empirical prediction intervals derived from the backtest residuals.
-5. **Pipeline** (`pipeline.py`): orchestrates all of the above, writes every figure to `reports/figures/` and the headline numbers to `reports/metrics.json`.
+## Approach and the key judgment call
 
-Why fit only on the recovered regime, and what the forecast does and does not
-claim, is argued in [`reports/NARRATIVE.md`](reports/NARRATIVE.md).
+The central decision is not the algorithm, it is **what data to fit on.** I
+treat the pandemic as a regime change and fit the forecast on the post-recovery
+regime (2021-07 onward), keeping the full history only for context and the
+seasonality profile. The model is Holt-Winters (additive trend, multiplicative
+seasonality). Then, instead of reporting its MAPE in isolation, I score it
+against a **seasonal-naive baseline** (each month predicted by the same month a
+year earlier) on the identical held-out window.
 
-## Run it
+## Results
+
+![Backtest vs baseline](reports/figures/04_backtest.png)
+
+Both methods track the recovered series tightly; the naive baseline is fractionally
+better (0.93% vs 1.15% MAPE). On a smooth, strongly seasonal signal that is
+expected, and saying so is more useful than a misleading "my model wins."
+
+![History and the COVID shock](reports/figures/01_history.png)
+![Seasonal decomposition](reports/figures/02_decomposition.png)
+
+## From demo to deployment
+
+How this maps to a real forecasting engagement:
+
+- **Swap the data, keep the method.** The public FRED series stands in for a client's own monthly history; the pipeline is series-agnostic.
+- **Recommend the baseline when it wins.** The disciplined output here would be: ship the seasonal-naive baseline, spend the saved complexity budget on monitoring. That is a cheaper, more robust production choice, and being willing to say it is the senior move.
+- **The real deliverable is break detection.** The 2020 lesson generalizes: production forecasting fails at regime changes. A deployment needs a monitor that flags when recent error jumps (a new structural break) and pauses automated forecasts, exactly the failure the COVID handling models.
+- **Cost is negligible** (CPU-seconds per refit), so the operating cost is governance and monitoring, not compute.
+
+## Methodology
+
+- **Baseline is explicit and scored on the same window** (`seasonal_naive_mape`); the model only "counts" if it beats it, and here it does not.
+- The pandemic is handled as a **regime split**, stated rather than hidden.
+- Prediction intervals come from the **empirical backtest residual spread**, not the model's optimistic nominal bands.
+- A test (`test_seasonal_naive_baseline_is_computed_and_competitive`) enforces that the comparison is always computed.
+
+## Quickstart
 
 ```bash
 git clone https://github.com/marc-albert-global/tourism-demand-forecast.git
@@ -69,12 +90,27 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
 python -m tourism_forecast.pipeline   # regenerates figures + metrics.json
-pytest -q                             # 5 tests, runs on the committed snapshot
+pytest -q                             # 6 tests, on the committed snapshot
 ```
+
+## Limitations
+
+- Univariate: no exogenous drivers (price, capacity, macro). A real shock breaks it, exactly as 2020 broke any pre-2020 model.
+- The model does not beat the naive baseline on this series; on noisier or trend-shifting series the balance can flip, which is why the comparison is built in.
+- Single series, monthly, US air travel; other domains will behave differently.
+
+## Roadmap
+
+- Add exogenous regressors (capacity, price indices) and re-run the baseline comparison.
+- Calibrate prediction intervals against realized coverage.
+- A drift/break monitor that pauses automated forecasts when recent error spikes.
+- Multi-series support with per-series model-vs-baseline selection.
 
 ## Data
 
-Public-domain U.S. federal data. Provenance in [`data/README.md`](data/README.md).
+U.S. Air Revenue Passenger-Miles (FRED `AIRRPMTSI`), public domain. Provenance
+in [`data/README.md`](data/README.md). Full analytical narrative in
+[`reports/NARRATIVE.md`](reports/NARRATIVE.md).
 
 ## License
 

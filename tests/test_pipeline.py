@@ -1,6 +1,7 @@
 """Tests run on the committed data snapshot, no network required."""
 
 import pandas as pd
+import pytest
 
 from tourism_forecast import analyze, clean, forecast, ingest
 
@@ -43,3 +44,20 @@ def test_forecast_horizon_and_intervals():
     assert len(fcst.mean) == 12
     assert (fcst.upper >= fcst.mean).all()
     assert (fcst.lower <= fcst.mean).all()
+
+
+def test_seasonal_naive_baseline_is_computed_and_competitive():
+    """We always compare to the do-nothing-clever baseline and report it honestly.
+
+    On this highly-seasonal recovered series the naive baseline is very strong
+    (it can even edge the model); the contract is that we measure and surface it,
+    not that the model always wins.
+    """
+    s = _series()
+    naive = forecast.seasonal_naive_mape(s)
+    fcst = forecast.forecast(s)
+    assert 0 < naive < 5.0                     # baseline is sane and strong
+    assert 0 < fcst.backtest.mape < 5.0        # both methods track the series closely
+    assert fcst.naive_mape == pytest.approx(naive, abs=0.01)
+    # improvement_pct is the signed gap vs. baseline; just confirm it is reported.
+    assert isinstance(fcst.improvement_pct, float)

@@ -19,7 +19,9 @@
     "horizon_months": 12,
     "mape_pct": 1.15,
     "rmse": 1306158.8,
-    "mae": 1069809.8
+    "mae": 1069809.8,
+    "seasonal_naive_mape_pct": 0.93,
+    "improvement_vs_naive_pct": -23.1
   },
   "forecast_next_12m_mean": 97003484.2
 }
