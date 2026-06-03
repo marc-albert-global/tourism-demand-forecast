@@ -72,7 +72,7 @@ expected, and saying so is more useful than a misleading "my model wins."
 How this maps to a real forecasting engagement:
 
 - **Swap the data, keep the method.** The public FRED series stands in for a client's own monthly history; the pipeline is series-agnostic.
-- **Recommend the baseline when it wins.** The disciplined output here would be: ship the seasonal-naive baseline, spend the saved complexity budget on monitoring. That is a cheaper, more robust production choice, and being willing to say it is the senior move.
+- **Recommend the baseline when it wins.** The disciplined output here would be: ship the seasonal-naive baseline, spend the saved complexity budget on monitoring. That is a cheaper, more dependable production choice, and being willing to say it is the senior move.
 - **The real deliverable is break detection.** The 2020 lesson generalizes: production forecasting fails at regime changes. A deployment needs a monitor that flags when recent error jumps (a new structural break) and pauses automated forecasts, exactly the failure the COVID handling models.
 - **Cost is negligible** (CPU-seconds per refit), so the operating cost is governance and monitoring, not compute.
 
